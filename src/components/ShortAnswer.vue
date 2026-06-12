@@ -72,7 +72,7 @@ function score(s) {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: rgba(74, 222, 128, 0.15);
+  background: var(--success-bg);
   color: var(--success);
   font-size: 13px;
   font-weight: 700;
@@ -136,8 +136,8 @@ function score(s) {
 }
 
 .exp-ref {
-  background: rgba(108, 124, 255, 0.08);
-  border: 1px solid rgba(108, 124, 255, 0.2);
+  background: rgba(91, 99, 211, 0.06);
+  border: 1px solid rgba(91, 99, 211, 0.15);
 }
 
 .exp-ref strong {
@@ -221,7 +221,7 @@ function score(s) {
 }
 
 .score-btn.half:hover {
-  background: rgba(251, 191, 36, 0.1);
+  background: var(--warning-bg);
 }
 
 .score-btn.zero {

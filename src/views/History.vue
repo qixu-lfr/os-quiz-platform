@@ -140,7 +140,7 @@ function clearAll() {
 .clear-btn {
   margin-top: 24px;
   color: var(--danger);
-  border-color: rgba(248, 113, 113, 0.3);
+  border-color: rgba(220, 38, 38, 0.2);
 }
 
 .clear-btn:hover {

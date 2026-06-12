@@ -74,8 +74,8 @@ function score(s) {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: rgba(168, 85, 247, 0.15);
-  color: #a855f7;
+  background: rgba(124, 58, 237, 0.08);
+  color: #7c3aed;
   font-size: 13px;
   font-weight: 700;
 }
@@ -138,8 +138,8 @@ function score(s) {
 }
 
 .exp-ref {
-  background: rgba(108, 124, 255, 0.08);
-  border: 1px solid rgba(108, 124, 255, 0.2);
+  background: rgba(91, 99, 211, 0.06);
+  border: 1px solid rgba(91, 99, 211, 0.15);
 }
 
 .exp-ref strong {
@@ -211,12 +211,12 @@ function score(s) {
 
 .score-btn.full { border-color: var(--success); color: var(--success); }
 .score-btn.full:hover { background: var(--success-bg); }
-.score-btn.good { border-color: #60a5fa; color: #60a5fa; }
-.score-btn.good:hover { background: rgba(96, 165, 250, 0.1); }
+.score-btn.good { border-color: #3b82f6; color: #3b82f6; }
+.score-btn.good:hover { background: rgba(59, 130, 246, 0.1); }
 .score-btn.half { border-color: var(--warning); color: var(--warning); }
-.score-btn.half:hover { background: rgba(251, 191, 36, 0.1); }
-.score-btn.low { border-color: #fb923c; color: #fb923c; }
-.score-btn.low:hover { background: rgba(251, 146, 60, 0.1); }
+.score-btn.half:hover { background: var(--warning-bg); }
+.score-btn.low { border-color: #ea580c; color: #ea580c; }
+.score-btn.low:hover { background: rgba(234, 88, 12, 0.1); }
 .score-btn.zero { border-color: var(--danger); color: var(--danger); }
 .score-btn.zero:hover { background: var(--danger-bg); }
 </style>

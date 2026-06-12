@@ -223,7 +223,7 @@ function saveAndGoHistory() {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), #a855f7);
+  background: linear-gradient(90deg, var(--accent), #7c3aed);
   border-radius: 2px;
   transition: width 0.3s ease;
 }
@@ -285,7 +285,7 @@ function saveAndGoHistory() {
 .result-score-big {
   font-size: 48px;
   font-weight: 800;
-  background: linear-gradient(135deg, #6c7cff, #a855f7);
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

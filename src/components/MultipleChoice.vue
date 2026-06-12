@@ -69,7 +69,7 @@ function select(i) {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: rgba(108, 124, 255, 0.15);
+  background: rgba(91, 99, 211, 0.08);
   color: var(--accent);
   font-size: 13px;
   font-weight: 700;
@@ -111,12 +111,12 @@ function select(i) {
 
 .option-item:hover:not(.correct):not(.wrong) {
   border-color: var(--accent);
-  background: rgba(108, 124, 255, 0.05);
+  background: rgba(91, 99, 211, 0.04);
 }
 
 .option-item.selected {
   border-color: var(--accent);
-  background: rgba(108, 124, 255, 0.1);
+  background: rgba(91, 99, 211, 0.08);
 }
 
 .option-item.correct {
@@ -167,13 +167,13 @@ function select(i) {
 
 .exp-correct {
   background: var(--success-bg);
-  border: 1px solid rgba(74, 222, 128, 0.2);
+  border: 1px solid rgba(22, 163, 74, 0.15);
   color: var(--success);
 }
 
 .exp-wrong {
   background: var(--danger-bg);
-  border: 1px solid rgba(248, 113, 113, 0.2);
+  border: 1px solid rgba(220, 38, 38, 0.15);
   color: var(--danger);
 }
 
@@ -185,7 +185,7 @@ function select(i) {
 .knowledge-ref {
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid var(--border-light);
 }
 
 .knowledge-ref strong {

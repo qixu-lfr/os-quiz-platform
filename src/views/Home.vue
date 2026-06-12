@@ -93,7 +93,7 @@ function goExam() {
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #6c7cff 0%, #a855f7 100%);
+  background: linear-gradient(135deg, #5b63d3 0%, #7c3aed 100%);
   color: #fff;
   font-size: 22px;
   font-weight: 800;
@@ -141,7 +141,7 @@ function goExam() {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: rgba(108, 124, 255, 0.12);
+  background: rgba(91, 99, 211, 0.08);
   color: var(--accent);
   font-size: 16px;
   font-weight: 700;
@@ -168,13 +168,13 @@ function goExam() {
 
 .exam-card {
   cursor: pointer;
-  background: linear-gradient(135deg, #1e2235 0%, #2a1e35 100%);
-  border-color: rgba(251, 191, 36, 0.2);
+  background: linear-gradient(135deg, #fefcf7 0%, #fdf8f0 100%);
+  border-color: rgba(217, 119, 6, 0.12);
 }
 
 .exam-card:hover {
   border-color: var(--warning);
-  box-shadow: 0 8px 24px rgba(251, 191, 36, 0.08);
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.06);
 }
 
 .exam-icon {
