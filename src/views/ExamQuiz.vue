@@ -32,8 +32,15 @@
       </template>
     </div>
 
-    <div class="quiz-footer" v-if="allAnswered && !showFinalResult">
-      <button class="btn btn-primary btn-lg" @click="showFinalResult = true">查看总分</button>
+    <div class="quiz-footer" v-if="!showFinalResult">
+      <div class="submit-hint" v-if="!allAnswered">
+        <span>还有 <strong>{{ totalQuestions - answeredCount }}</strong> 题未完成，完成后可提交试卷</span>
+      </div>
+      <button
+        class="btn btn-primary btn-lg"
+        :disabled="!allAnswered"
+        @click="showFinalResult = true"
+      >{{ allAnswered ? '提交试卷' : `还有 ${totalQuestions - answeredCount} 题未完成` }}</button>
     </div>
 
     <div v-if="showFinalResult" class="result-panel">
@@ -184,8 +191,33 @@ function saveAndGoHistory() {
 
 .question-block { margin-bottom: 24px; }
 
-.quiz-footer { text-align: center; margin-top: 40px; }
-.btn-lg { padding: 14px 40px; font-size: 16px; }
+.quiz-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 40px;
+}
+
+.submit-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.submit-hint strong {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.btn-lg {
+  padding: 14px 40px;
+  font-size: 16px;
+}
+
+.btn-lg:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .result-panel {
   margin-top: 40px;

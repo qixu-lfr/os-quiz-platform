@@ -5,19 +5,44 @@
       <span class="question-type-tag">填空题</span>
       <span class="question-score">2分</span>
     </div>
-    <p class="question-text" v-html="formattedQuestion"></p>
+
+    <!-- Multi-blank: inline inputs within text -->
+    <p class="question-text" v-if="blankCount > 1">
+      <template v-for="(seg, i) in textSegments" :key="i">
+        <span>{{ seg }}</span>
+        <input
+          v-if="i < blankCount"
+          v-model="userAnswers[i]"
+          class="fill-input inline-input"
+          :class="inputClass(i)"
+          :disabled="showResult"
+          :placeholder="'答案' + (i + 1)"
+          @keyup.enter="submit"
+        />
+      </template>
+    </p>
+
+    <!-- Single blank: highlight blanks, input below -->
+    <p v-else class="question-text" v-html="formattedQuestion"></p>
+
     <div class="answer-area">
       <input
+        v-if="blankCount === 1"
         v-model="userAnswer"
         class="fill-input"
         :class="{ 'correct': showResult && isCorrect, 'wrong': showResult && !isCorrect }"
+        :disabled="showResult"
         placeholder="请输入答案..."
         @keyup.enter="submit"
       />
-      <button class="btn btn-primary submit-btn" @click="submit" :disabled="!userAnswer.trim()">确认</button>
+      <button class="btn btn-primary submit-btn" @click="submit" :disabled="!canSubmit">确认</button>
     </div>
+
     <div v-if="showResult" class="explanation" :class="isCorrect ? 'exp-correct' : 'exp-wrong'">
       <strong>{{ isCorrect ? '✓ 回答正确' : '✗ 回答错误' }}</strong>
+      <div class="correct-answers" v-if="!isCorrect">
+        <strong>正确答案：</strong>{{ displayAnswer }}
+      </div>
       <div class="knowledge-ref">
         <strong>📖 知识点解析：</strong>
         <p>{{ question.explanation }}</p>
@@ -36,23 +61,75 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['answer'])
+
+const blankCount = computed(() => {
+  const matches = props.question.question.match(/_+/g)
+  return matches ? matches.length : 1
+})
+
+const textSegments = computed(() => {
+  return props.question.question.split(/_+/g)
+})
+
+const expectedAnswers = computed(() => {
+  const parts = props.question.answer.split('|').map(a => a.trim())
+  if (blankCount.value > 1 && parts.length === blankCount.value) {
+    return parts.map(p => [p.toLowerCase()])
+  }
+  // Single blank or mismatch: treat all parts as alternatives for one blank
+  return [parts.map(p => p.toLowerCase())]
+})
+
 const userAnswer = ref('')
+const userAnswers = ref([])
+
+// Initialize userAnswers array
+if (blankCount.value > 1) {
+  userAnswers.value = Array(blankCount.value).fill('')
+}
 
 const formattedQuestion = computed(() => {
   return props.question.question.replace(/_+/g, '<span class="blank-spot">___</span>')
 })
 
-const isCorrect = computed(() => {
-  if (!userAnswer.value.trim()) return false
-  const normalized = userAnswer.value.trim().toLowerCase()
-  const accepted = props.question.answer.split('|').map(a => a.trim().toLowerCase())
-  return accepted.includes(normalized)
+const displayAnswer = computed(() => {
+  return props.question.answer.replace(/\|/g, '、')
 })
 
+const canSubmit = computed(() => {
+  if (props.showResult) return false
+  if (blankCount.value > 1) {
+    return userAnswers.value.every(a => a.trim())
+  }
+  return userAnswer.value.trim() !== ''
+})
+
+const isCorrect = computed(() => {
+  if (blankCount.value > 1) {
+    return userAnswers.value.every((ans, i) => {
+      if (!ans.trim()) return false
+      if (i >= expectedAnswers.value.length) return false
+      const normalized = ans.trim().toLowerCase()
+      return expectedAnswers.value[i].includes(normalized)
+    })
+  }
+  if (!userAnswer.value.trim()) return false
+  const normalized = userAnswer.value.trim().toLowerCase()
+  return expectedAnswers.value[0].includes(normalized)
+})
+
+function inputClass(i) {
+  if (!props.showResult) return {}
+  if (i >= expectedAnswers.value.length) return { 'wrong': true }
+  const normalized = (userAnswers.value[i] || '').trim().toLowerCase()
+  return expectedAnswers.value[i].includes(normalized) ? { 'correct': true } : { 'wrong': true }
+}
+
 function submit() {
-  if (!userAnswer.value.trim()) return
+  if (!canSubmit.value) return
   const score = isCorrect.value ? 2 : 0
-  emit('answer', { questionId: props.question.id, score, answer: userAnswer.value })
+  const answer = blankCount.value > 1 ? userAnswers.value.join('|') : userAnswer.value
+  emit('answer', { questionId: props.question.id, score, answer })
 }
 </script>
 
@@ -90,7 +167,7 @@ function submit() {
 
 .question-text {
   font-size: 15px;
-  line-height: 1.8;
+  line-height: 2.2;
   margin-bottom: 16px;
 }
 
@@ -100,6 +177,12 @@ function submit() {
   border-bottom: 2px dashed var(--accent);
   margin: 0 4px;
   color: var(--accent);
+}
+
+.inline-input {
+  width: 130px;
+  margin: 0 4px;
+  vertical-align: baseline;
 }
 
 .answer-area {
@@ -161,6 +244,11 @@ function submit() {
   background: var(--danger-bg);
   border: 1px solid rgba(220, 38, 38, 0.15);
   color: var(--danger);
+}
+
+.exp-wrong .correct-answers {
+  margin-top: 6px;
+  color: var(--success);
 }
 
 .explanation p {
