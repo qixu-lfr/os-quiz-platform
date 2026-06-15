@@ -23,3 +23,24 @@ export function saveRecord(record) {
 export function clearHistory() {
   localStorage.removeItem(STORAGE_KEY)
 }
+
+const PROGRESS_PREFIX = 'os-quiz-progress:'
+
+export function saveProgress(key, data) {
+  try {
+    localStorage.setItem(PROGRESS_PREFIX + key, JSON.stringify(data))
+  } catch { /* quota exceeded, ignore */ }
+}
+
+export function loadProgress(key) {
+  try {
+    const data = localStorage.getItem(PROGRESS_PREFIX + key)
+    return data ? JSON.parse(data) : null
+  } catch {
+    return null
+  }
+}
+
+export function clearProgress(key) {
+  localStorage.removeItem(PROGRESS_PREFIX + key)
+}

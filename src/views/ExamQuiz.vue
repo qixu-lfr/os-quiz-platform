@@ -11,7 +11,10 @@
     <div class="progress-bar">
       <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
     </div>
-    <p class="progress-text">已完成 {{ answeredCount }}/{{ totalQuestions }} 题</p>
+    <div class="progress-info">
+      <p class="progress-text">已完成 {{ answeredCount }}/{{ totalQuestions }} 题</p>
+      <button v-if="answeredCount > 0" class="btn-clear-progress" title="清除答题记录" @click="clearCurrentProgress">清除记录</button>
+    </div>
 
     <div class="questions-area">
       <template v-for="(section, sIdx) in sections" :key="sIdx">
@@ -70,18 +73,31 @@ import MultipleChoice from '../components/MultipleChoice.vue'
 import FillBlank from '../components/FillBlank.vue'
 import ShortAnswer from '../components/ShortAnswer.vue'
 import Essay from '../components/Essay.vue'
-import { saveRecord } from '../utils/storage'
+import { saveRecord, saveProgress, loadProgress, clearProgress } from '../utils/storage'
 
 const router = useRouter()
 const examData = ref(null)
 const answers = ref({})
 const showResults = ref({})
 const showFinalResult = ref(false)
+const hasRestored = ref(false)
+
+const progressKey = 'exam'
 
 onMounted(async () => {
   const mod = await import('../data/exam.json')
   examData.value = mod.default || mod
+  restoreProgress()
 })
+
+function restoreProgress() {
+  const saved = loadProgress(progressKey)
+  if (saved && saved.answers && Object.keys(saved.answers).length > 0) {
+    answers.value = saved.answers
+    showResults.value = saved.showResults || {}
+  }
+  hasRestored.value = true
+}
 
 const currentQuestions = computed(() => {
   if (!examData.value) return null
@@ -92,7 +108,7 @@ const sections = computed(() => {
   if (!currentQuestions.value) return []
   const q = currentQuestions.value
   return [
-    { label: '选择题（每题1分）', scoreInfo: '共15分', component: MultipleChoice, type: 'mc', questions: q.multipleChoice.map((item, i) => ({...item, _key: 'mc_' + i})) },
+    { label: '选择题（每题1分）', scoreInfo: '共15分', component: MultipleChoice, type: 'mc', questions: q.multipleChoice.map((item, i) => ({...item, _key: 'mc_' + i, _savedIdx: answers.value['mc_' + i]?.answer})) },
     { label: '填空题（每题2分）', scoreInfo: '共20分', component: FillBlank, type: 'fb', questions: q.fillBlank.map((item, i) => ({...item, _key: 'fb_' + i})) },
     { label: '简答题（每题5分）', scoreInfo: '共25分', component: ShortAnswer, type: 'sa', questions: q.shortAnswer.map((item, i) => ({...item, _key: 'sa_' + i})) },
     { label: '大题（每题10分）', scoreInfo: '共50分', component: Essay, type: 'es', questions: q.essay.map((item, i) => ({...item, _key: 'es_' + i})) }
@@ -124,6 +140,16 @@ const breakdown = computed(() => {
 function onAnswer(key, type, e) {
   answers.value[key] = e
   showResults.value[key] = true
+  if (hasRestored.value) {
+    saveProgress(progressKey, { answers: answers.value, showResults: showResults.value })
+  }
+}
+
+function clearCurrentProgress() {
+  if (!confirm('确定清除当前答题记录？')) return
+  answers.value = {}
+  showResults.value = {}
+  clearProgress(progressKey)
 }
 
 function goHome() { router.push('/') }
@@ -136,6 +162,7 @@ function saveAndGoHistory() {
     maxScore: maxScore.value,
     breakdown: breakdown.value
   })
+  clearProgress(progressKey)
   router.push('/history')
 }
 </script>
@@ -171,10 +198,33 @@ function saveAndGoHistory() {
   transition: width 0.3s ease;
 }
 
+.progress-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
 .progress-text {
   font-size: 12px;
   color: var(--text-secondary);
-  margin-bottom: 24px;
+  margin: 0;
+}
+
+.btn-clear-progress {
+  padding: 2px 10px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-clear-progress:hover {
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .section-divider {

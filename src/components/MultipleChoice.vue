@@ -13,7 +13,7 @@
         class="option-item"
         :class="{
           'selected': selected === i && !showResult,
-          'correct': showResult && isCorrect && i === question.answer,
+          'correct': showResult && i === question.answer,
           'wrong': showResult && selected === i && i !== question.answer
         }"
         @click="select(i)"
@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
   question: Object,
@@ -45,6 +45,10 @@ const props = defineProps({
 
 const emit = defineEmits(['answer'])
 const selected = ref(null)
+
+watch(() => props.question._savedIdx, (v) => {
+  if (v != null && selected.value === null) selected.value = v
+}, { immediate: true })
 
 const isCorrect = computed(() => selected.value === props.question.answer)
 
