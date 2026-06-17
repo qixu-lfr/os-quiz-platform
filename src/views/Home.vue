@@ -19,12 +19,14 @@
         <div v-if="userList.length > 0" class="user-list-hint">
           <span v-if="currentUser">或切换到已有用户：</span>
           <span v-else>已有用户：</span>
-          <button
+          <span
             v-for="u in userList"
             :key="u"
-            class="user-tag"
-            @click="switchUser(u)"
-          >{{ u }}</button>
+            class="user-tag-wrap"
+          >
+            <button class="user-tag" @click="switchUser(u)">{{ u }}</button>
+            <button class="user-tag-del" title="删除该用户" @click="deleteUser(u)">×</button>
+          </span>
         </div>
       </div>
     </div>
@@ -80,7 +82,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getCurrentUser, setCurrentUser, getUserList } from '../utils/user'
+import { getCurrentUser, setCurrentUser, getUserList, removeUser } from '../utils/user'
 
 const router = useRouter()
 
@@ -104,6 +106,15 @@ function switchUser(name) {
   currentUser.value = name
   newName.value = ''
   showSwitch.value = false
+}
+
+function deleteUser(name) {
+  if (!confirm(`确定删除用户「${name}」及其所有答题数据？此操作不可恢复。`)) return
+  removeUser(name)
+  userList.value = getUserList()
+  if (currentUser.value === name) {
+    currentUser.value = ''
+  }
 }
 
 const chapters = [
@@ -216,6 +227,28 @@ function goExam() {
 .user-tag:hover {
   background: rgba(91, 99, 211, 0.12);
   border-color: var(--accent);
+}
+
+.user-tag-wrap {
+  display: inline-flex;
+  align-items: center;
+}
+
+.user-tag-del {
+  margin-left: 2px;
+  padding: 0 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 1;
+  border-radius: 3px;
+}
+
+.user-tag-del:hover {
+  color: var(--danger);
+  background: var(--danger-bg);
 }
 
 .home-header {
