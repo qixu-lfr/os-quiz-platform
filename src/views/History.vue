@@ -2,7 +2,7 @@
   <div class="page-container">
     <button class="btn btn-outline" @click="$router.push('/')">← 返回首页</button>
     <h1 class="page-title" style="margin-top:20px">历史记录</h1>
-    <p class="page-subtitle">查看过往的答题记录，便于回头复习</p>
+    <p class="page-subtitle">查看过往的答题记录，便于回头复习 · <strong>{{ currentUser }}</strong></p>
 
     <div v-if="history.length === 0" class="empty-state">
       <p>暂无历史记录</p>
@@ -34,8 +34,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getHistory, clearHistory } from '../utils/storage'
+import { getCurrentUser } from '../utils/user'
 
 const history = ref([])
+const currentUser = ref(getCurrentUser())
 
 onMounted(() => {
   history.value = getHistory()

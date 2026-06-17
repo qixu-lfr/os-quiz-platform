@@ -1,5 +1,34 @@
 <template>
   <div class="page-container home">
+    <div class="user-bar">
+      <template v-if="currentUser">
+        <span class="user-label">当前用户</span>
+        <span class="user-name">{{ currentUser }}</span>
+        <button class="user-switch-btn" @click="showSwitch = !showSwitch">{{ showSwitch ? '收起' : '切换' }}</button>
+      </template>
+      <div v-if="!currentUser || showSwitch" class="user-picker">
+        <div class="user-picker-row">
+          <input
+            v-model="newName"
+            class="user-input"
+            placeholder="输入你的姓名..."
+            @keyup.enter="setUser"
+          />
+          <button class="btn btn-primary user-confirm-btn" :disabled="!newName.trim()" @click="setUser">确认</button>
+        </div>
+        <div v-if="userList.length > 0" class="user-list-hint">
+          <span v-if="currentUser">或切换到已有用户：</span>
+          <span v-else>已有用户：</span>
+          <button
+            v-for="u in userList"
+            :key="u"
+            class="user-tag"
+            @click="switchUser(u)"
+          >{{ u }}</button>
+        </div>
+      </div>
+    </div>
+
     <div class="home-header">
       <div class="home-logo">
         <span class="logo-icon">OS</span>
@@ -49,9 +78,33 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { getCurrentUser, setCurrentUser, getUserList } from '../utils/user'
 
 const router = useRouter()
+
+const currentUser = ref(getCurrentUser())
+const userList = ref(getUserList())
+const newName = ref('')
+const showSwitch = ref(false)
+
+function setUser() {
+  const name = newName.value.trim()
+  if (!name) return
+  setCurrentUser(name)
+  currentUser.value = name
+  userList.value = getUserList()
+  newName.value = ''
+  showSwitch.value = false
+}
+
+function switchUser(name) {
+  setCurrentUser(name)
+  currentUser.value = name
+  newName.value = ''
+  showSwitch.value = false
+}
 
 const chapters = [
   { id: 0, name: '计算机系统概述', desc: '硬件结构、CPU、存储器、指令执行' },
@@ -73,6 +126,98 @@ function goExam() {
 </script>
 
 <style scoped>
+.user-bar {
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.user-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-right: 8px;
+}
+
+.user-name {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 15px;
+}
+
+.user-switch-btn {
+  margin-left: 12px;
+  padding: 2px 10px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.user-switch-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.user-picker {
+  margin-top: 10px;
+}
+
+.user-picker-row {
+  display: flex;
+  gap: 8px;
+}
+
+.user-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+}
+
+.user-input:focus {
+  border-color: var(--accent);
+}
+
+.user-confirm-btn {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.user-list-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.user-tag {
+  padding: 2px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(91, 99, 211, 0.06);
+  border: 1px solid rgba(91, 99, 211, 0.15);
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.user-tag:hover {
+  background: rgba(91, 99, 211, 0.12);
+  border-color: var(--accent);
+}
+
 .home-header {
   display: flex;
   align-items: center;
