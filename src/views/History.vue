@@ -2,11 +2,11 @@
   <div class="page-container">
     <button class="btn btn-outline" @click="$router.push('/')">← 返回首页</button>
     <h1 class="page-title" style="margin-top:20px">历史记录</h1>
-    <p class="page-subtitle">查看过往的答题成绩</p>
+    <p class="page-subtitle">查看过往的答题记录，便于回头复习</p>
 
     <div v-if="history.length === 0" class="empty-state">
       <p>暂无历史记录</p>
-      <p class="empty-hint">完成一次答题后，成绩会自动保存到这里</p>
+      <p class="empty-hint">完成部分题目后保存，记录会自动保存到这里</p>
     </div>
 
     <div v-else class="history-list">
@@ -19,14 +19,9 @@
             <span class="hc-name">{{ record.chapterName }}</span>
             <span v-if="record.setIndex !== undefined" class="hc-set">第{{ record.setIndex + 1 }}套</span>
           </div>
-          <div class="hc-score" :class="getScoreClass(record)">
-            {{ record.score }} / {{ record.maxScore }}
+          <div class="hc-progress">
+            已完成 {{ record.answeredCount || 0 }}/{{ record.totalQuestions || '?' }} 题
           </div>
-        </div>
-        <div class="hc-breakdown" v-if="record.breakdown">
-          <span v-for="b in record.breakdown" :key="b.label" class="hc-item">
-            {{ b.label }} {{ b.score }}/{{ b.max }}
-          </span>
         </div>
         <div class="hc-date">{{ record.date }}</div>
       </div>
@@ -45,13 +40,6 @@ const history = ref([])
 onMounted(() => {
   history.value = getHistory()
 })
-
-function getScoreClass(record) {
-  const rate = record.score / record.maxScore
-  if (rate >= 0.8) return 'score-high'
-  if (rate >= 0.6) return 'score-mid'
-  return 'score-low'
-}
 
 function clearAll() {
   if (!confirm('确定清空所有历史记录？')) return
@@ -107,26 +95,6 @@ function clearAll() {
 }
 
 .hc-set {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.hc-score {
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.score-high { color: var(--success); }
-.score-mid { color: var(--warning); }
-.score-low { color: var(--danger); }
-
-.hc-breakdown {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 8px;
-}
-
-.hc-item {
   font-size: 12px;
   color: var(--text-secondary);
 }

@@ -36,33 +36,14 @@
       </template>
     </div>
 
-    <div class="quiz-footer" v-if="!showFinalResult">
-      <div class="submit-hint" v-if="!allAnswered">
-        <span>还有 <strong>{{ totalQuestions - answeredCount }}</strong> 题未完成，完成后可提交试卷</span>
-      </div>
+    <div class="quiz-footer">
+      <p class="submit-hint" v-if="answeredCount === 0">完成部分题目后即可保存</p>
+      <p class="submit-hint" v-else>已完成 {{ answeredCount }}/{{ totalQuestions }} 题</p>
       <button
         class="btn btn-primary btn-lg"
-        :disabled="!allAnswered"
-        @click="showFinalResult = true"
-      >{{ allAnswered ? '提交试卷' : `还有 ${totalQuestions - answeredCount} 题未完成` }}</button>
-    </div>
-
-    <div v-if="showFinalResult" class="result-panel">
-      <div class="result-header">
-        <h2>考试结果</h2>
-        <div class="result-score-big">{{ totalScore }} / {{ maxScore }}</div>
-        <p class="result-rate">正确率 {{ Math.round(totalScore / maxScore * 100) }}%</p>
-      </div>
-      <div class="result-breakdown">
-        <div class="breakdown-item" v-for="b in breakdown" :key="b.label">
-          <span class="b-label">{{ b.label }}</span>
-          <span class="b-score">{{ b.score }} / {{ b.max }}</span>
-        </div>
-      </div>
-      <div class="result-actions">
-        <button class="btn btn-outline" @click="goHome">返回首页</button>
-        <button class="btn btn-primary" @click="saveAndGoHistory">保存成绩并查看历史</button>
-      </div>
+        :disabled="answeredCount === 0"
+        @click="saveAndGoHistory"
+      >保存并退出</button>
     </div>
   </div>
 </template>
@@ -80,7 +61,6 @@ const router = useRouter()
 const examData = ref(null)
 const answers = ref({})
 const showResults = ref({})
-const showFinalResult = ref(false)
 const hasRestored = ref(false)
 
 const progressKey = 'exam'
@@ -119,25 +99,6 @@ const sections = computed(() => {
 const totalQuestions = computed(() => 15 + 10 + 5 + 5)
 const answeredCount = computed(() => Object.keys(answers.value).length)
 const progressPercent = computed(() => Math.round(answeredCount.value / totalQuestions.value * 100))
-const allAnswered = computed(() => answeredCount.value >= totalQuestions.value)
-
-const totalScore = computed(() => Object.values(answers.value).reduce((sum, a) => sum + a.score, 0))
-const maxScore = computed(() => 15 * 1 + 10 * 2 + 5 * 5 + 5 * 10)
-
-const breakdown = computed(() => {
-  const a = answers.value
-  const mcScore = Object.entries(a).filter(([k]) => k.startsWith('mc')).reduce((s, [, v]) => s + v.score, 0)
-  const fbScore = Object.entries(a).filter(([k]) => k.startsWith('fb')).reduce((s, [, v]) => s + v.score, 0)
-  const saScore = Object.entries(a).filter(([k]) => k.startsWith('sa')).reduce((s, [, v]) => s + v.score, 0)
-  const esScore = Object.entries(a).filter(([k]) => k.startsWith('es')).reduce((s, [, v]) => s + v.score, 0)
-  return [
-    { label: '选择题', score: mcScore, max: 15 },
-    { label: '填空题', score: fbScore, max: 20 },
-    { label: '简答题', score: saScore, max: 25 },
-    { label: '大题', score: esScore, max: 50 }
-  ]
-})
-
 function onAnswer(key, type, e) {
   answers.value[key] = e
   showResults.value[key] = true
@@ -167,9 +128,10 @@ function saveAndGoHistory() {
   saveRecord({
     type: 'exam',
     chapterName: '综合考试',
-    score: totalScore.value,
-    maxScore: maxScore.value,
-    breakdown: breakdown.value
+    answeredCount: answeredCount.value,
+    totalQuestions: totalQuestions.value,
+    answers: answers.value,
+    showResults: showResults.value
   })
   clearProgress(progressKey)
   router.push('/history')
@@ -278,30 +240,4 @@ function saveAndGoHistory() {
   cursor: not-allowed;
 }
 
-.result-panel {
-  margin-top: 40px;
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  padding: 32px;
-  text-align: center;
-}
-
-.result-header h2 { font-size: 22px; margin-bottom: 16px; }
-
-.result-score-big {
-  font-size: 48px;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--warning), #ea580c);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.result-rate { color: var(--text-secondary); margin: 4px 0 24px; }
-
-.result-breakdown { display: flex; justify-content: center; gap: 24px; margin-bottom: 28px; }
-.breakdown-item { display: flex; flex-direction: column; gap: 4px; }
-.b-label { font-size: 12px; color: var(--text-secondary); }
-.b-score { font-size: 18px; font-weight: 700; }
-.result-actions { display: flex; justify-content: center; gap: 12px; }
 </style>
