@@ -40,11 +40,13 @@ import { ref, computed, watch } from 'vue'
 const props = defineProps({
   question: Object,
   index: Number,
-  showResult: Boolean
+  showResult: Boolean,
+  savedAnswer: { type: [Number, null], default: null },
+  readonly: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['answer'])
-const selected = ref(null)
+const selected = ref(props.savedAnswer)
 
 watch(() => props.question._savedIdx, (v) => {
   if (v != null && selected.value === null) selected.value = v
@@ -53,6 +55,7 @@ watch(() => props.question._savedIdx, (v) => {
 const isCorrect = computed(() => selected.value === props.question.answer)
 
 function select(i) {
+  if (props.readonly) return
   selected.value = i
   emit('answer', { questionId: props.question.id, score: i === props.question.answer ? 1 : 0, answer: i })
 }

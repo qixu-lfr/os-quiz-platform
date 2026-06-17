@@ -15,7 +15,7 @@
           v-model="userAnswers[i]"
           class="fill-input inline-input"
           :class="inputClass(i)"
-          :disabled="isSubmitted"
+          :disabled="isSubmitted || readonly"
           :placeholder="'答案' + (i + 1)"
           @keyup.enter="submit"
         />
@@ -31,12 +31,12 @@
         v-model="userAnswer"
         class="fill-input"
         :class="{ 'correct': showResult && isCorrect, 'wrong': showResult && !isCorrect }"
-        :disabled="isSubmitted"
+        :disabled="isSubmitted || readonly"
         placeholder="请输入答案..."
         @keyup.enter="submit"
       />
-      <button class="btn btn-primary submit-btn" @click="submit" :disabled="!canSubmit">确认</button>
-      <button v-if="isSubmitted && showResult" class="btn btn-outline retry-btn" @click="retry">重新作答</button>
+      <button v-if="!readonly" class="btn btn-primary submit-btn" @click="submit" :disabled="!canSubmit">确认</button>
+      <button v-if="!readonly && isSubmitted && showResult" class="btn btn-outline retry-btn" @click="retry">重新作答</button>
     </div>
 
     <div v-if="showResult" class="explanation" :class="isCorrect ? 'exp-correct' : 'exp-wrong'">
@@ -58,7 +58,9 @@ import { ref, computed } from 'vue'
 const props = defineProps({
   question: Object,
   index: Number,
-  showResult: Boolean
+  showResult: Boolean,
+  savedAnswer: { type: String, default: '' },
+  readonly: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['answer', 'retry'])
@@ -85,8 +87,15 @@ const userAnswer = ref('')
 const userAnswers = ref([])
 const isSubmitted = ref(false)
 
-// Initialize userAnswers array
-if (blankCount.value > 1) {
+// Initialize from savedAnswer for readonly/review mode
+if (props.readonly && props.savedAnswer) {
+  if (blankCount.value > 1) {
+    userAnswers.value = props.savedAnswer.split('|').map(a => a.trim())
+  } else {
+    userAnswer.value = props.savedAnswer
+  }
+  isSubmitted.value = true
+} else if (blankCount.value > 1) {
   userAnswers.value = Array(blankCount.value).fill('')
 }
 

@@ -10,10 +10,11 @@
       <textarea
         v-model="userAnswer"
         class="answer-textarea"
+        :disabled="submitted || readonly"
         placeholder="请输入你的答案..."
         rows="4"
       ></textarea>
-      <button class="btn btn-primary submit-btn" @click="submit" :disabled="!userAnswer.trim()">提交答案</button>
+      <button v-if="!readonly" class="btn btn-primary submit-btn" @click="submit" :disabled="!userAnswer.trim()">提交答案</button>
     </div>
     <div v-if="submitted" class="explanation exp-ref">
       <strong>📝 参考答案</strong>
@@ -22,7 +23,7 @@
         <strong>📖 知识点解析：</strong>
         <p>{{ question.explanation }}</p>
       </div>
-      <div class="self-score">
+      <div v-if="!readonly" class="self-score">
         <span>请对照参考答案自评：</span>
         <div class="score-btns">
           <button class="score-btn full" :class="{ active: showResult }" @click="score(5)">满分 (5分)</button>
@@ -40,12 +41,14 @@ import { ref } from 'vue'
 const props = defineProps({
   question: Object,
   index: Number,
-  showResult: Boolean
+  showResult: Boolean,
+  savedAnswer: { type: String, default: '' },
+  readonly: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['answer'])
-const userAnswer = ref('')
-const submitted = ref(false)
+const userAnswer = ref(props.savedAnswer || '')
+const submitted = ref(props.readonly)
 
 function submit() {
   if (!userAnswer.value.trim()) return

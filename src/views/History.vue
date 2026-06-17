@@ -10,7 +10,12 @@
     </div>
 
     <div v-else class="history-list">
-      <div v-for="record in history" :key="record.id" class="card history-card">
+      <div
+        v-for="record in history"
+        :key="record.id"
+        class="card history-card"
+        @click="$router.push('/review/' + record.id)"
+      >
         <div class="hc-top">
           <div class="hc-type">
             <span class="tag" :class="record.type === 'exam' ? 'tag-exam' : 'tag-chapter'">
@@ -19,8 +24,9 @@
             <span class="hc-name">{{ record.chapterName }}</span>
             <span v-if="record.setIndex !== undefined" class="hc-set">第{{ record.setIndex + 1 }}套</span>
           </div>
-          <div class="hc-progress">
-            已完成 {{ record.answeredCount || 0 }}/{{ record.totalQuestions || '?' }} 题
+          <div class="hc-right">
+            <span class="hc-progress">已完成 {{ record.answeredCount || 0 }}/{{ record.totalQuestions || '?' }} 题</span>
+            <span class="hc-arrow">查看 →</span>
           </div>
         </div>
         <div class="hc-date">{{ record.date }}</div>
@@ -70,12 +76,13 @@ function clearAll() {
 }
 
 .history-card {
-  cursor: default;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .history-card:hover {
-  transform: none;
-  box-shadow: none;
+  border-color: var(--accent);
+  box-shadow: 0 4px 16px rgba(91, 99, 211, 0.06);
 }
 
 .hc-top {
@@ -99,6 +106,23 @@ function clearAll() {
 .hc-set {
   font-size: 12px;
   color: var(--text-secondary);
+}
+
+.hc-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hc-progress {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.hc-arrow {
+  font-size: 13px;
+  color: var(--accent);
+  white-space: nowrap;
 }
 
 .hc-date {
