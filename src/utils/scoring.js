@@ -8,10 +8,17 @@ export function scoreFillBlank(question, userAnswer) {
   const expectedParts = question.answer.split('|').map(a => a.trim().toLowerCase())
 
   if (blankCount > 1 && expectedParts.length === blankCount) {
-    // Multi-blank: user answer is |-separated; each part must match the corresponding blank
+    // Multi-blank: user answer is |-separated
     const userParts = userAnswer.split('|').map(a => a.trim().toLowerCase())
     if (userParts.length !== blankCount) return 0
-    return userParts.every((p, i) => p && p === expectedParts[i]) ? 2 : 0
+
+    // Position-based matching
+    if (userParts.every((p, i) => p && p === expectedParts[i])) return 2
+
+    // Set-based matching (order-independent)
+    const userSorted = [...userParts].sort()
+    const expectedSorted = [...expectedParts].sort()
+    return userSorted.every((u, i) => u === expectedSorted[i]) ? 2 : 0
   }
 
   // Single blank: | separates acceptable alternatives

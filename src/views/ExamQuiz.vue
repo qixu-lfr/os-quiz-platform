@@ -30,6 +30,7 @@
           :index="qIdx"
           :showResult="showResults[q._key]"
           @answer="(e) => onAnswer(q._key, section.type, e)"
+          @retry="(e) => onRetry(q._key)"
           class="question-block"
         />
       </template>
@@ -140,6 +141,14 @@ const breakdown = computed(() => {
 function onAnswer(key, type, e) {
   answers.value[key] = e
   showResults.value[key] = true
+  if (hasRestored.value) {
+    saveProgress(progressKey, { answers: answers.value, showResults: showResults.value })
+  }
+}
+
+function onRetry(key) {
+  delete answers.value[key]
+  showResults.value[key] = false
   if (hasRestored.value) {
     saveProgress(progressKey, { answers: answers.value, showResults: showResults.value })
   }

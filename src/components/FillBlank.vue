@@ -15,7 +15,7 @@
           v-model="userAnswers[i]"
           class="fill-input inline-input"
           :class="inputClass(i)"
-          :disabled="showResult"
+          :disabled="isSubmitted"
           :placeholder="'答案' + (i + 1)"
           @keyup.enter="submit"
         />
@@ -31,11 +31,12 @@
         v-model="userAnswer"
         class="fill-input"
         :class="{ 'correct': showResult && isCorrect, 'wrong': showResult && !isCorrect }"
-        :disabled="showResult"
+        :disabled="isSubmitted"
         placeholder="请输入答案..."
         @keyup.enter="submit"
       />
       <button class="btn btn-primary submit-btn" @click="submit" :disabled="!canSubmit">确认</button>
+      <button v-if="isSubmitted && showResult" class="btn btn-outline retry-btn" @click="retry">重新作答</button>
     </div>
 
     <div v-if="showResult" class="explanation" :class="isCorrect ? 'exp-correct' : 'exp-wrong'">
@@ -60,7 +61,7 @@ const props = defineProps({
   showResult: Boolean
 })
 
-const emit = defineEmits(['answer'])
+const emit = defineEmits(['answer', 'retry'])
 
 const blankCount = computed(() => {
   const matches = props.question.question.match(/_+/g)
@@ -82,6 +83,7 @@ const expectedAnswers = computed(() => {
 
 const userAnswer = ref('')
 const userAnswers = ref([])
+const isSubmitted = ref(false)
 
 // Initialize userAnswers array
 if (blankCount.value > 1) {
@@ -93,11 +95,15 @@ const formattedQuestion = computed(() => {
 })
 
 const displayAnswer = computed(() => {
-  return props.question.answer.replace(/\|/g, '、')
+  if (blankCount.value > 1) {
+    const parts = props.question.answer.split('|')
+    return parts.map((p, i) => `${i + 1}. ${p.trim()}`).join('；')
+  }
+  return props.question.answer.replace(/\|/g, ' / ')
 })
 
 const canSubmit = computed(() => {
-  if (props.showResult) return false
+  if (isSubmitted.value) return false
   if (blankCount.value > 1) {
     return userAnswers.value.every(a => a.trim())
   }
@@ -106,12 +112,20 @@ const canSubmit = computed(() => {
 
 const isCorrect = computed(() => {
   if (blankCount.value > 1) {
-    return userAnswers.value.every((ans, i) => {
-      if (!ans.trim()) return false
-      if (i >= expectedAnswers.value.length) return false
+    if (userAnswers.value.some(a => !a.trim())) return false
+    if (userAnswers.value.length !== expectedAnswers.value.length) return false
+
+    // Position-based matching
+    const posMatch = userAnswers.value.every((ans, i) => {
       const normalized = ans.trim().toLowerCase()
       return expectedAnswers.value[i].includes(normalized)
     })
+    if (posMatch) return true
+
+    // Set-based matching (order-independent)
+    const userSorted = userAnswers.value.map(a => a.trim().toLowerCase()).sort()
+    const expectedSorted = expectedAnswers.value.map(e => e[0]).sort()
+    return userSorted.every((u, i) => u === expectedSorted[i])
   }
   if (!userAnswer.value.trim()) return false
   const normalized = userAnswer.value.trim().toLowerCase()
@@ -119,17 +133,27 @@ const isCorrect = computed(() => {
 })
 
 function inputClass(i) {
-  if (!props.showResult) return {}
+  if (!isSubmitted.value) return {}
   if (i >= expectedAnswers.value.length) return { 'wrong': true }
   const normalized = (userAnswers.value[i] || '').trim().toLowerCase()
-  return expectedAnswers.value[i].includes(normalized) ? { 'correct': true } : { 'wrong': true }
+  if (expectedAnswers.value[i].includes(normalized)) return { 'correct': true }
+  if (expectedAnswers.value.some(e => e.includes(normalized))) return { 'correct': true }
+  return { 'wrong': true }
 }
 
 function submit() {
   if (!canSubmit.value) return
+  isSubmitted.value = true
   const score = isCorrect.value ? 2 : 0
   const answer = blankCount.value > 1 ? userAnswers.value.join('|') : userAnswer.value
   emit('answer', { questionId: props.question.id, score, answer })
+}
+
+function retry() {
+  isSubmitted.value = false
+  userAnswer.value = ''
+  userAnswers.value = blankCount.value > 1 ? Array(blankCount.value).fill('') : []
+  emit('retry', { questionId: props.question.id })
 }
 </script>
 
@@ -224,6 +248,12 @@ function submit() {
 .submit-btn {
   padding: 10px 20px;
   flex-shrink: 0;
+}
+
+.retry-btn {
+  padding: 10px 20px;
+  flex-shrink: 0;
+  font-size: 13px;
 }
 
 .explanation {
